@@ -9,6 +9,7 @@ La Phase 1 ajoute **Apache Kafka** pour découpler les agents temporellement et 
 ## 🎯 Objectif
 
 Comprendre l'architecture événementielle :
+
 - Communication asynchrone via Kafka
 - Producers et Consumers
 - Découplage temporel et spatial
@@ -53,6 +54,99 @@ python src/agents/decision_agent/main.py
 
 ---
 
+## ⚙️ Configuration
+
+La Phase 1 utilise le fichier `config.yaml` à la racine du projet pour centraliser toute la configuration. Les valeurs peuvent être **surchargées** via des variables d'environnement.
+
+### Fichier config.yaml
+
+```yaml
+# config.yaml - Configuration centralisée
+agents:
+  risk_agent:
+    model: "claude-sonnet-4-20250514" # Modèle LLM pour analyse de risque
+    temperature: 0.2 # Créativité (0.0 = déterministe)
+    consumer_group: "agent-risk-analyst"
+
+  decision_agent:
+    model: "claude-3-5-sonnet-20241022" # Modèle LLM pour décision finale
+    temperature: 0.1 # Plus conservateur pour décisions
+    consumer_group: "agent-loan-officer"
+
+  intake_agent:
+    model: "claude-3-5-haiku-20241022" # Modèle rapide pour validation
+    temperature: 0.0 # Totalement déterministe
+
+# Seuils de décision automatique
+thresholds:
+  auto_approve_score: 20 # Score < 20 = approbation auto
+  auto_reject_score: 80 # Score > 80 = rejet auto
+  high_value_amount: 100000 # Montant nécessitant revue humaine
+
+# Configuration Kafka
+kafka:
+  bootstrap_servers: "localhost:9092"
+  topics:
+    applications: "finance.loan.application.v1"
+    risk_results: "risk.scoring.result.v1"
+    decisions: "finance.loan.decision.v1"
+```
+
+### Override via Variables d'Environnement
+
+Utilisez le pattern `SECTION__KEY__SUBKEY` pour surcharger n'importe quelle valeur :
+
+```bash
+# Changer le modèle du Risk Agent
+export AGENTS__RISK_AGENT__MODEL=claude-3-5-haiku-20241022
+
+# Ajuster la température pour plus de créativité
+export AGENTS__DECISION_AGENT__TEMPERATURE=0.3
+
+# Modifier les seuils de décision
+export THRESHOLDS__AUTO_APPROVE_SCORE=15
+export THRESHOLDS__AUTO_REJECT_SCORE=85
+
+# Configuration Kafka pour environnement distant
+export KAFKA__BOOTSTRAP_SERVERS=kafka.production.example.com:9092
+```
+
+### Exemples d'Usage
+
+**Développement local avec modèle économique :**
+
+```bash
+# Utiliser Haiku (moins cher) pour tous les agents en dev
+AGENTS__RISK_AGENT__MODEL=claude-3-5-haiku-20241022 \
+AGENTS__DECISION_AGENT__MODEL=claude-3-5-haiku-20241022 \
+python src/agents/risk_agent/main.py
+```
+
+**Production avec seuils stricts :**
+
+```bash
+# Seuils plus conservateurs pour la production
+THRESHOLDS__AUTO_APPROVE_SCORE=10 \
+THRESHOLDS__AUTO_REJECT_SCORE=90 \
+python src/agents/decision_agent/main.py
+```
+
+**Fichier .env pour persistance :**
+
+```bash
+# .env - Variables pour votre environnement
+ANTHROPIC_API_KEY=sk-ant-your-key-here
+AGENTS__RISK_AGENT__MODEL=claude-sonnet-4-20250514
+KAFKA__BOOTSTRAP_SERVERS=localhost:9092
+```
+
+### Priorité de Configuration
+
+1. **Variables d'environnement** (priorité haute)
+2. **config.yaml** (priorité basse)
+
+> 💡 **Tip:** Utilisez `python -c "from src.shared.config_loader import load_config; print(load_config())"` pour afficher la configuration résolue.
+
 ## 📂 Structure
 
 ```
@@ -74,13 +168,13 @@ phase1/
 
 ## 🔍 Différences avec Phase 0
 
-| Aspect | Phase 0 | Phase 1 |
-|--------|---------|---------|
-| Communication | Appels directs | Événements Kafka |
-| Déploiement | Script unique | 3 processus séparés |
-| Infrastructure | Aucune | Kafka Docker |
-| Scalabilité | Limitée | Horizontale |
-| Découplage | Temporel | Temporel + Spatial |
+| Aspect         | Phase 0        | Phase 1             |
+| -------------- | -------------- | ------------------- |
+| Communication  | Appels directs | Événements Kafka    |
+| Déploiement    | Script unique  | 3 processus séparés |
+| Infrastructure | Aucune         | Kafka Docker        |
+| Scalabilité    | Limitée        | Horizontale         |
+| Découplage     | Temporel       | Temporel + Spatial  |
 
 ---
 
@@ -140,14 +234,17 @@ docker exec agentmesh-kafka kafka-console-consumer \
 ## 🐛 Dépannage
 
 **Kafka ne démarre pas**
+
 - Vérifiez les logs: `docker-compose logs kafka`
 - Assurez-vous que le port 9092 n'est pas utilisé
 
 **Agents ne reçoivent pas de messages**
+
 - Vérifiez que les topics existent: `python scripts/init_kafka.py`
 - Vérifiez les logs des agents pour les erreurs de connexion
 
 **Messages dupliqués**
+
 - Normal si vous relancez les agents (auto.offset.reset=earliest)
 - Pour repartir de zéro: supprimez les topics et recréez-les
 
@@ -158,6 +255,7 @@ docker exec agentmesh-kafka kafka-console-consumer \
 Une fois que vous maîtrisez la Phase 1 :
 
 1. **Phase 2** : Ajouter RAG avec ChromaDB
+
    - Consultez [../PHASES.md](../PHASES.md)
    - Naviguez vers `phase2/`
 

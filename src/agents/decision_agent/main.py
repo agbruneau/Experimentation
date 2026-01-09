@@ -1,11 +1,86 @@
 #!/usr/bin/env python3
 """
-Decision Agent - Point d'entrée principal
-==========================================
-Agent de décision finale pour les demandes de prêt.
+Decision Agent - Agent de Décision de Prêt
+===========================================
+
+Agent intelligent de prise de décision finale pour les demandes de prêt,
+basé sur l'évaluation de risque fournie par le Risk Agent.
+
+L'agent consomme les évaluations de risque depuis Kafka, applique les règles
+métier de décision (seuils auto-approve/reject), et publie la décision finale
+avec justification.
+
+Architecture:
+    Ce module implémente l'Agent 3 (Loan Officer) du pipeline AgentMeshKafka.
+    C'est le dernier maillon de la chaîne de décision::
+
+        [Intake Agent] → [Risk Agent] → [Decision Agent] → Décision Finale
+
+Règles de Décision:
+    L'agent applique une logique en trois zones basée sur le score de risque:
+
+    - **Score < 20** (Zone Verte): Approbation automatique
+    - **Score > 80** (Zone Rouge): Rejet automatique  
+    - **Score 20-80** (Zone Grise): Analyse détaillée via LLM
+
+    Pour les montants élevés (> 100k USD par défaut), une revue humaine
+    est systématiquement requise.
+
+Configuration:
+    L'agent peut être configuré via variables d'environnement ou ``config.yaml``::
+
+        # Variables d'environnement
+        DECISION_AGENT_MODEL=claude-3-5-sonnet-20241022
+        DECISION_AGENT_TEMPERATURE=0.1
+        DECISION_CONSUMER_GROUP=agent-loan-officer
+        ANTHROPIC_API_KEY=sk-ant-...
+
+        # Équivalent config.yaml
+        agents:
+          decision_agent:
+            model: "claude-3-5-sonnet-20241022"
+            temperature: 0.1
+            consumer_group: "agent-loan-officer"
+
+        thresholds:
+          auto_approve_score: 20
+          auto_reject_score: 80
+          high_value_amount: 100000
 
 Usage:
-    python -m src.agents.decision_agent.main
+    En ligne de commande::
+
+        $ python -m src.agents.decision_agent.main
+
+    Programmatiquement::
+
+        from src.agents.decision_agent.main import DecisionAgent
+        from src.shared.models import RiskAssessment, RiskLevel
+
+        agent = DecisionAgent()
+        
+        assessment = RiskAssessment(
+            application_id="APP-001",
+            assessment_id="ASSESS-001",
+            risk_score=45,
+            risk_category=RiskLevel.MEDIUM,
+            debt_to_income_ratio=35.5,
+            rationale="DTI acceptable, historique crédit stable",
+            timestamp=1704067200000,
+        )
+        
+        decision = agent.make_decision(assessment)
+        print(f"Status: {decision.status.value}")
+        print(f"Approved Amount: {decision.approved_amount}")
+
+Topics Kafka:
+    - **Consomme**: ``risk.scoring.result.v1``
+    - **Produit**: ``finance.loan.decision.v1``
+
+See Also:
+    - :mod:`src.agents.risk_agent.main`: Agent de risque en amont
+    - :mod:`src.shared.models`: Modèles de données Pydantic
+    - ``docs/03-AgentSpecs.md``: Spécifications détaillées des agents
 """
 
 import os
@@ -27,14 +102,63 @@ logger = structlog.get_logger()
 
 class DecisionAgent:
     """
-    Agent Loan Officer - Le Décideur Final
-    
-    Critères de décision (voir docs/03-AgentSpecs.md):
-    - Risk Score < 20: APPROBATION AUTOMATIQUE
-    - Risk Score > 80: REJET AUTOMATIQUE
-    - Entre 20 et 80: Analyse de la rationale
-    
-    Pour les transactions à haut risque, génère MANUAL_REVIEW_REQUIRED.
+    Agent de décision finale pour les demandes de prêt.
+
+    Cet agent prend la décision finale (approbation, rejet, ou revue manuelle)
+    basée sur l'évaluation de risque fournie par le Risk Agent. Il applique
+    des règles métier déterministes combinées à une analyse LLM pour les
+    cas ambigus.
+
+    L'agent consomme les messages du topic Kafka ``risk.scoring.result.v1``
+    et publie les décisions dans ``finance.loan.decision.v1``.
+
+    Attributes:
+        model (ChatAnthropic): Client LLM Anthropic Claude pour l'analyse
+            des cas en zone grise.
+        consumer (KafkaConsumerClient): Consommateur Kafka pour les évaluations.
+        producer (KafkaProducerClient): Producteur Kafka pour les décisions.
+        agent_id (str): Identifiant unique de l'agent pour le tracing.
+        THRESHOLD_AUTO_APPROVE (int): Score en dessous duquel approuver auto (défaut: 20).
+        THRESHOLD_AUTO_REJECT (int): Score au dessus duquel rejeter auto (défaut: 80).
+        THRESHOLD_HIGH_VALUE (float): Montant nécessitant revue humaine (défaut: 100k).
+
+    Example:
+        Utilisation basique::
+
+            agent = DecisionAgent()
+            agent.run()  # Démarre la boucle de consommation Kafka
+
+        Prise de décision sur une évaluation::
+
+            agent = DecisionAgent()
+            decision = agent.make_decision(assessment)
+            
+            if decision.status == DecisionStatus.APPROVED:
+                print(f"Prêt approuvé: {decision.approved_amount} USD")
+                print(f"Taux: {decision.interest_rate}%")
+            elif decision.status == DecisionStatus.REJECTED:
+                print(f"Rejet: {decision.rejection_reasons}")
+
+    Configuration:
+        +---------------------------+----------------------------------+----------------------+
+        | Variable Environnement    | Description                      | Défaut               |
+        +===========================+==================================+======================+
+        | DECISION_AGENT_MODEL      | Modèle Claude à utiliser         | claude-3-5-sonnet    |
+        +---------------------------+----------------------------------+----------------------+
+        | DECISION_AGENT_TEMPERATURE| Température du modèle (0.0-1.0)  | 0.1                  |
+        +---------------------------+----------------------------------+----------------------+
+        | DECISION_CONSUMER_GROUP   | Groupe de consommateurs Kafka    | agent-loan-officer   |
+        +---------------------------+----------------------------------+----------------------+
+        | ANTHROPIC_API_KEY         | Clé API Anthropic (requis)       | -                    |
+        +---------------------------+----------------------------------+----------------------+
+
+    Note:
+        Les seuils de décision (auto_approve_score, auto_reject_score) peuvent
+        être configurés via ``config.yaml`` dans la section ``thresholds``.
+
+    See Also:
+        - :class:`src.shared.models.LoanDecision`: Structure de sortie
+        - :class:`src.shared.models.RiskAssessment`: Structure d'entrée
     """
     
     # Seuils de décision (configurable)

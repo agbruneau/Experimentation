@@ -1,11 +1,84 @@
 #!/usr/bin/env python3
 """
-Risk Agent - Point d'entrée principal
-======================================
-Agent d'analyse de risque avec RAG sur les politiques de crédit.
+Risk Agent - Agent d'Analyse de Risque de Crédit
+=================================================
+
+Agent intelligent d'évaluation du risque de crédit utilisant le pattern ReAct
+(Reason + Act) avec augmentation par RAG sur les politiques de crédit.
+
+L'agent consomme des demandes de prêt depuis Kafka, effectue une analyse
+multi-factorielle (DTI, historique crédit, politiques), et publie une
+évaluation de risque structurée.
+
+Architecture:
+    Ce module implémente l'Agent 2 (Risk Analyst) du pipeline AgentMeshKafka.
+    Il s'inscrit dans une architecture événementielle avec découplage via Kafka::
+
+        [Intake Agent] → Kafka → [Risk Agent] → Kafka → [Decision Agent]
+
+Pattern ReAct:
+    L'agent suit le pattern ReAct pour une prise de décision explicable:
+    
+    1. **Thought**: Analyse du profil demandeur
+    2. **Action**: Appel aux outils (RAG, calcul DTI, historique)
+    3. **Observation**: Collecte des résultats
+    4. **Final Answer**: Score de risque avec justification
+
+Configuration:
+    L'agent peut être configuré via variables d'environnement ou ``config.yaml``::
+
+        # Variables d'environnement
+        RISK_AGENT_MODEL=claude-sonnet-4-20250514
+        RISK_AGENT_TEMPERATURE=0.2
+        RISK_CONSUMER_GROUP=agent-risk-analyst
+        ANTHROPIC_API_KEY=sk-ant-...
+
+        # Équivalent config.yaml
+        agents:
+          risk_agent:
+            model: "claude-sonnet-4-20250514"
+            temperature: 0.2
+            consumer_group: "agent-risk-analyst"
 
 Usage:
-    python -m src.agents.risk_agent.main
+    En ligne de commande::
+
+        $ python -m src.agents.risk_agent.main
+
+    Programmatiquement::
+
+        from src.agents.risk_agent.main import RiskAgent
+        from src.shared.models import LoanApplication, EmploymentStatus
+
+        agent = RiskAgent()
+        
+        application = LoanApplication(
+            application_id="APP-001",
+            applicant_id="CUST-12345",
+            amount_requested=50000.0,
+            declared_monthly_income=5000.0,
+            employment_status=EmploymentStatus.FULL_TIME,
+            existing_debts=500.0,
+            timestamp=1704067200000,
+            currency="USD",
+        )
+        
+        assessment = agent.analyze_application(application)
+        print(f"Risk Score: {assessment.risk_score}/100")
+        print(f"Category: {assessment.risk_category.value}")
+
+Topics Kafka:
+    - **Consomme**: ``finance.loan.application.v1``
+    - **Produit**: ``risk.scoring.result.v1``
+
+See Also:
+    - :mod:`src.agents.decision_agent.main`: Agent de décision en aval
+    - :mod:`src.shared.models`: Modèles de données Pydantic
+    - ``docs/03-AgentSpecs.md``: Spécifications détaillées des agents
+
+Note:
+    Le RAG sur ChromaDB est disponible à partir de la Phase 2.
+    En Phase 1, les politiques retournées sont simulées.
 """
 
 import os
@@ -29,14 +102,54 @@ logger = structlog.get_logger()
 
 class RiskAgent:
     """
-    Agent Risk Analyst - Le Cœur Cognitif
+    Agent d'analyse de risque de crédit avec pattern ReAct.
+
+    Cet agent évalue le risque associé à une demande de prêt en combinant:
     
-    Implémente le pattern ReAct (Reason + Act) avec:
-    - RAG sur la base de politiques de crédit (ChromaDB)
-    - Calcul du ratio dette/revenu (DTI)
-    - Scoring de risque basé sur les règles métier
-    
-    Voir docs/03-AgentSpecs.md pour les outils disponibles.
+    - **RAG (Retrieval-Augmented Generation)**: Recherche sémantique dans la
+      base de politiques de crédit (ChromaDB)
+    - **Calculs déterministes**: Ratio dette/revenu (DTI), scoring pondéré
+    - **Raisonnement LLM**: Génération de justifications en langage naturel
+
+    L'agent consomme les messages du topic Kafka ``finance.loan.application.v1``
+    et publie les évaluations dans ``risk.scoring.result.v1``.
+
+    Attributes:
+        model (ChatAnthropic): Client LLM Anthropic Claude pour le raisonnement.
+        consumer (KafkaConsumerClient): Consommateur Kafka pour les demandes.
+        producer (KafkaProducerClient): Producteur Kafka pour les évaluations.
+        agent_id (str): Identifiant unique de l'agent pour le tracing.
+
+    Example:
+        Utilisation basique::
+
+            agent = RiskAgent()
+            agent.run()  # Démarre la boucle de consommation Kafka
+
+        Analyse d'une demande spécifique::
+
+            agent = RiskAgent()
+            assessment = agent.analyze_application(application)
+            
+            if assessment.risk_score > 80:
+                print("Risque critique détecté!")
+
+    Configuration:
+        +---------------------------+----------------------------------+-------------------+
+        | Variable Environnement    | Description                      | Défaut            |
+        +===========================+==================================+===================+
+        | RISK_AGENT_MODEL          | Modèle Claude à utiliser         | claude-sonnet-4   |
+        +---------------------------+----------------------------------+-------------------+
+        | RISK_AGENT_TEMPERATURE    | Température du modèle (0.0-1.0)  | 0.2               |
+        +---------------------------+----------------------------------+-------------------+
+        | RISK_CONSUMER_GROUP       | Groupe de consommateurs Kafka    | agent-risk-analyst|
+        +---------------------------+----------------------------------+-------------------+
+        | ANTHROPIC_API_KEY         | Clé API Anthropic (requis)       | -                 |
+        +---------------------------+----------------------------------+-------------------+
+
+    See Also:
+        - :class:`src.shared.models.RiskAssessment`: Structure de sortie
+        - :class:`src.shared.models.LoanApplication`: Structure d'entrée
     """
     
     def __init__(self):
