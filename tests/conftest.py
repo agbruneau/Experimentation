@@ -21,3 +21,12 @@ async def setup_test_db():
     """Initialise la base de données de test."""
     from app.database import init_db
     await init_db()
+
+
+@pytest.fixture
+def client():
+    """Client de test pour l'API."""
+    from httpx import ASGITransport, AsyncClient
+    from app.main import app
+    transport = ASGITransport(app=app)
+    return AsyncClient(transport=transport, base_url="http://test")

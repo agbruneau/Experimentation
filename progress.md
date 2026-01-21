@@ -8,10 +8,10 @@
 
 | Métrique | Cible | Actuel |
 |----------|-------|--------|
-| Features complétées | 21 | 14 |
-| Tâches terminées | 181 | 97 |
-| Tests passants | 165 | 123 |
-| Couverture code | >80% | ~55% |
+| Features complétées | 21 | 19 |
+| Tâches terminées | 181 | 132 |
+| Tests passants | 165 | 181 |
+| Couverture code | >80% | ~65% |
 
 ---
 
@@ -463,17 +463,17 @@ async def test_acl_transform():
 
 # Phase 3 - Pilier Événements ⚡
 
-## Feature 3.1 : Message Broker In-Memory
+## Feature 3.1 : Message Broker In-Memory ✅
 > **Fichiers** : `app/integration/events/broker.py`
 
 | # | Tâche | Fichier | Statut |
 |---|-------|---------|--------|
-| 1 | Broker central | `app/integration/events/broker.py` | [ ] |
-| 2 | Queue point-à-point | `app/integration/events/broker.py` | [ ] |
-| 3 | Topic Pub/Sub | `app/integration/events/broker.py` | [ ] |
-| 4 | Garantie at-least-once | `app/integration/events/broker.py` | [ ] |
-| 5 | Dead Letter Queue | `app/integration/events/broker.py` | [ ] |
-| 6 | API contrôle | `app/api/broker.py` | [ ] |
+| 1 | Broker central | `app/integration/events/broker.py` | [x] |
+| 2 | Queue point-à-point | `app/integration/events/broker.py` | [x] |
+| 3 | Topic Pub/Sub | `app/integration/events/broker.py` | [x] |
+| 4 | Garantie at-least-once | `app/integration/events/broker.py` | [x] |
+| 5 | Dead Letter Queue | `app/integration/events/broker.py` | [x] |
+| 6 | API contrôle | `app/api/broker.py` | [x] |
 
 **Tests** : `tests/test_feature_3_1.py`
 ```python
@@ -509,23 +509,23 @@ async def test_dlq():
     assert dlq is not None
 ```
 
-**Critères** : `[ ]` Queue P2P `[ ]` Pub/Sub multi `[ ]` At-least-once `[ ]` DLQ
+**Critères** : `[x]` Queue P2P `[x]` Pub/Sub multi `[x]` At-least-once `[x]` DLQ
 
 ---
 
-## Feature 3.2 : Visualiseur Flux D3.js
+## Feature 3.2 : Visualiseur Flux D3.js ✅
 > **Fichiers** : `static/js/flow-visualizer.js`, `app/templates/sandbox/visualizer.html`
 
 | # | Tâche | Fichier | Statut |
 |---|-------|---------|--------|
-| 1 | Module visualiseur | `static/js/flow-visualizer.js` | [ ] |
-| 2 | Layout force-directed | `static/js/flow-visualizer.js` | [ ] |
-| 3 | Animation particules | `static/js/flow-visualizer.js` | [ ] |
-| 4 | Zoom et pan | `static/js/flow-visualizer.js` | [ ] |
-| 5 | Timeline replay | `static/js/flow-visualizer.js` | [ ] |
-| 6 | Couleurs par pilier | `static/js/flow-visualizer.js` | [ ] |
-| 7 | Template page | `app/templates/sandbox/visualizer.html` | [ ] |
-| 8 | Connexion SSE | `static/js/flow-visualizer.js` | [ ] |
+| 1 | Module visualiseur | `static/js/flow-visualizer.js` | [x] |
+| 2 | Layout force-directed | `static/js/flow-visualizer.js` | [x] |
+| 3 | Animation particules | `static/js/flow-visualizer.js` | [x] |
+| 4 | Zoom et pan | `static/js/flow-visualizer.js` | [x] |
+| 5 | Timeline replay | `static/js/flow-visualizer.js` | [x] |
+| 6 | Couleurs par pilier | `static/js/flow-visualizer.js` | [x] |
+| 7 | Template page | `app/templates/sandbox/visualizer.html` | [x] |
+| 8 | Connexion SSE | `static/js/flow-visualizer.js` | [x] |
 
 **Tests** : `tests/test_feature_3_2.py`
 ```python
@@ -548,22 +548,22 @@ async def test_visualizer_page():
         assert "svg" in r.text.lower() or "d3" in r.text.lower()
 ```
 
-**Critères** : `[ ]` Nœuds services `[ ]` Particules animées `[ ]` Zoom/Pan `[ ]` Timeline `[ ]` SSE
+**Critères** : `[x]` Nœuds services `[x]` Particules animées `[x]` Zoom/Pan `[x]` Timeline `[x]` SSE
 
 ---
 
-## Feature 3.3 : Module 6 - Messaging Basics
+## Feature 3.3 : Module 6 - Messaging Basics ✅
 > **Fichiers** : `app/theory/content/06_messaging_basics/`
 
 | # | Tâche | Fichier | Statut |
 |---|-------|---------|--------|
-| 1 | Section Sync vs Async | `01_sync_async.md` | [ ] |
-| 2 | Section Queue | `02_queue.md` | [ ] |
-| 3 | Section Pub/Sub | `03_pubsub.md` | [ ] |
-| 4 | Section Garanties | `04_guarantees.md` | [ ] |
-| 5 | Section Idempotence | `05_idempotence.md` | [ ] |
-| 6 | Scénario EVT-01 | `app/sandbox/scenarios/evt_01.py` | [ ] |
-| 7 | Scénario EVT-02 | `app/sandbox/scenarios/evt_02.py` | [ ] |
+| 1 | Section Sync vs Async | `01_sync_async.md` | [x] |
+| 2 | Section Queue | `02_queue.md` | [x] |
+| 3 | Section Pub/Sub | `03_pubsub.md` | [x] |
+| 4 | Section Garanties | `04_guarantees.md` | [x] |
+| 5 | Section Idempotence | `05_idempotence.md` | [x] |
+| 6 | Scénario EVT-01 | `app/sandbox/scenarios/__init__.py` | [x] |
+| 7 | Scénario EVT-02 | `app/sandbox/scenarios/__init__.py` | [x] |
 
 **Tests** : `tests/test_feature_3_3.py`
 ```python
@@ -589,23 +589,23 @@ async def test_scenarios_evt01_02():
             assert r.status_code == 200
 ```
 
-**Critères** : `[ ]` 5 sections `[ ]` Scénario EVT-01 `[ ]` Scénario EVT-02
+**Critères** : `[x]` 5 sections `[x]` Scénario EVT-01 `[x]` Scénario EVT-02
 
 ---
 
-## Feature 3.4 : Module 7 - Event-Driven
+## Feature 3.4 : Module 7 - Event-Driven ✅
 > **Fichiers** : `app/integration/events/event_store.py`, `app/integration/events/cqrs.py`
 
 | # | Tâche | Fichier | Statut |
 |---|-------|---------|--------|
-| 1 | Event Store append-only | `app/integration/events/event_store.py` | [ ] |
-| 2 | Rebuild state (replay) | `app/integration/events/event_store.py` | [ ] |
-| 3 | CQRS Command Handler | `app/integration/events/cqrs.py` | [ ] |
-| 4 | CQRS Query Handler | `app/integration/events/cqrs.py` | [ ] |
-| 5 | Projections | `app/integration/events/cqrs.py` | [ ] |
-| 6 | Contenu Module 7 | `app/theory/content/07_event_driven/` | [ ] |
-| 7 | Scénario EVT-03 | `app/sandbox/scenarios/evt_03.py` | [ ] |
-| 8 | Scénario EVT-05 | `app/sandbox/scenarios/evt_05.py` | [ ] |
+| 1 | Event Store append-only | `app/integration/events/event_store.py` | [x] |
+| 2 | Rebuild state (replay) | `app/integration/events/event_store.py` | [x] |
+| 3 | CQRS Command Handler | `app/integration/events/cqrs.py` | [x] |
+| 4 | CQRS Query Handler | `app/integration/events/cqrs.py` | [x] |
+| 5 | Projections | `app/integration/events/cqrs.py` | [x] |
+| 6 | Contenu Module 7 | `app/theory/content/07_event_driven/` | [x] |
+| 7 | Scénario EVT-03 | `app/sandbox/scenarios/__init__.py` | [x] |
+| 8 | Scénario EVT-05 | `app/sandbox/scenarios/__init__.py` | [x] |
 
 **Tests** : `tests/test_feature_3_4.py`
 ```python
@@ -623,22 +623,22 @@ async def test_event_store():
     assert state["status"] == "ACTIVE"
 ```
 
-**Critères** : `[ ]` Event Store `[ ]` Replay `[ ]` CQRS `[ ]` Projections `[ ]` Scénarios
+**Critères** : `[x]` Event Store `[x]` Replay `[x]` CQRS `[x]` Projections `[x]` Scénarios
 
 ---
 
-## Feature 3.5 : Module 8 - Saga & Outbox
+## Feature 3.5 : Module 8 - Saga & Outbox ✅
 > **Fichiers** : `app/integration/events/saga.py`, `app/integration/events/outbox.py`
 
 | # | Tâche | Fichier | Statut |
 |---|-------|---------|--------|
-| 1 | Saga Orchestrator | `app/integration/events/saga.py` | [ ] |
-| 2 | Compensation (rollback) | `app/integration/events/saga.py` | [ ] |
-| 3 | Outbox table + polling | `app/integration/events/outbox.py` | [ ] |
-| 4 | Contenu Module 8 | `app/theory/content/08_saga_transactions/` | [ ] |
-| 5 | Scénario EVT-04 | `app/sandbox/scenarios/evt_04.py` | [ ] |
-| 6 | Scénario EVT-06 | `app/sandbox/scenarios/evt_06.py` | [ ] |
-| 7 | Scénario EVT-07 | `app/sandbox/scenarios/evt_07.py` | [ ] |
+| 1 | Saga Orchestrator | `app/integration/events/saga.py` | [x] |
+| 2 | Compensation (rollback) | `app/integration/events/saga.py` | [x] |
+| 3 | Outbox table + polling | `app/integration/events/outbox.py` | [x] |
+| 4 | Contenu Module 8 | `app/theory/content/08_saga_transactions/` | [x] |
+| 5 | Scénario EVT-04 | `app/sandbox/scenarios/__init__.py` | [x] |
+| 6 | Scénario EVT-06 | `app/sandbox/scenarios/__init__.py` | [x] |
+| 7 | Scénario EVT-07 | `app/sandbox/scenarios/__init__.py` | [x] |
 
 **Tests** : `tests/test_feature_3_5.py`
 ```python
@@ -664,7 +664,7 @@ async def test_saga_compensation():
     assert len(compensated) == 1
 ```
 
-**Critères** : `[ ]` Saga N étapes `[ ]` Compensation auto `[ ]` Outbox atomique `[ ]` Scénarios
+**Critères** : `[x]` Saga N étapes `[x]` Compensation auto `[x]` Outbox atomique `[x]` Scénarios
 
 ---
 

@@ -18,6 +18,7 @@ from app.api.progress import router as progress_router
 from app.api.theory import router as theory_router
 from app.api.sandbox import router as sandbox_router
 from app.api.mocks import router as mocks_router
+from app.api.broker import router as broker_router
 
 
 @asynccontextmanager
@@ -47,6 +48,7 @@ app.include_router(progress_router, prefix="/api/progress", tags=["progress"])
 app.include_router(theory_router, prefix="/api/theory", tags=["theory"])
 app.include_router(sandbox_router, prefix="/api/sandbox", tags=["sandbox"])
 app.include_router(mocks_router, prefix="/mocks", tags=["mocks"])
+app.include_router(broker_router, prefix="/api/broker", tags=["broker"])
 
 
 # File d'événements SSE globale
