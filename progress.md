@@ -8,10 +8,10 @@
 
 | Métrique | Cible | Actuel |
 |----------|-------|--------|
-| Features complétées | 21 | 21 |
-| Tâches terminées | 181 | 144 |
-| Tests passants | 165 | 199 |
-| Couverture code | >80% | ~70% |
+| Features complétées | 21 | 22 |
+| Tâches terminées | 181 | 153 |
+| Tests passants | 165 | 248 |
+| Couverture code | >80% | ~75% |
 
 ---
 
@@ -747,20 +747,20 @@ async def test_data_scenarios():
 
 # Phase 5 - Patterns Transversaux
 
-## Feature 5.1 : Résilience & Modules 12-14
+## Feature 5.1 : Résilience & Modules 12-14 ✅
 > **Fichiers** : `app/integration/cross_cutting/`
 
 | # | Tâche | Fichier | Statut |
 |---|-------|---------|--------|
-| 1 | Circuit Breaker | `app/integration/cross_cutting/circuit_breaker.py` | [ ] |
-| 2 | Retry + Backoff | `app/integration/cross_cutting/retry.py` | [ ] |
-| 3 | Fallback + Timeout | `app/integration/cross_cutting/retry.py` | [ ] |
-| 4 | Observability | `app/integration/cross_cutting/observability.py` | [ ] |
-| 5 | Security JWT | `app/integration/cross_cutting/security.py` | [ ] |
-| 6 | Contenu Module 12 | `app/theory/content/12_resilience/` | [ ] |
-| 7 | Contenu Module 13 | `app/theory/content/13_observability/` | [ ] |
-| 8 | Contenu Module 14 | `app/theory/content/14_security/` | [ ] |
-| 9 | Scénarios CROSS-01/02/03 | `app/sandbox/scenarios/cross_*.py` | [ ] |
+| 1 | Circuit Breaker | `app/integration/cross_cutting/circuit_breaker.py` | [x] |
+| 2 | Retry + Backoff | `app/integration/cross_cutting/retry.py` | [x] |
+| 3 | Fallback + Timeout | `app/integration/cross_cutting/retry.py` | [x] |
+| 4 | Observability | `app/integration/cross_cutting/observability.py` | [x] |
+| 5 | Security JWT | `app/integration/cross_cutting/security.py` | [x] |
+| 6 | Contenu Module 12 | `app/theory/content/12_resilience/` | [x] |
+| 7 | Contenu Module 13 | `app/theory/content/13_observability/` | [x] |
+| 8 | Contenu Module 14 | `app/theory/content/14_security/` | [x] |
+| 9 | Scénarios CROSS-01/02/03 | `app/sandbox/scenarios/cross_*.py` | [x] |
 
 **Tests** : `tests/test_feature_5_1.py`
 ```python
@@ -781,7 +781,7 @@ async def test_circuit_breaker():
     assert cb.state == "HALF_OPEN"
 ```
 
-**Critères** : `[ ]` Circuit Breaker `[ ]` Retry `[ ]` Modules 12-14 `[ ]` Scénarios CROSS
+**Critères** : `[x]` Circuit Breaker `[x]` Retry `[x]` Modules 12-14 `[x]` Scénarios CROSS
 
 ---
 
@@ -928,9 +928,9 @@ async def test_e2e_journey():
 | DATA-05 | Contrôle qualité | 4.2 | [x] |
 | DATA-06 | Data virtualization | 4.2 | [x] |
 | DATA-07 | Data lineage | 4.2 | [x] |
-| CROSS-01 | Panne tarificateur | 5.1 | [ ] |
-| CROSS-02 | Tracing distribué | 5.1 | [ ] |
-| CROSS-03 | Sécuriser gateway | 5.1 | [ ] |
+| CROSS-01 | Panne tarificateur | 5.1 | [x] |
+| CROSS-02 | Tracing distribué | 5.1 | [x] |
+| CROSS-03 | Sécuriser gateway | 5.1 | [x] |
 | CROSS-04 | Écosystème complet | 6.1 | [ ] |
 
 ---
