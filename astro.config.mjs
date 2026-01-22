@@ -3,7 +3,7 @@ import tailwind from '@astrojs/tailwind';
 
 export default defineConfig({
   site: 'https://agbruneau.github.io',
-  base: '/Experimentation/',
+  // base: '/Experimentation/',  // Uncomment for GitHub Pages deployment
   integrations: [tailwind()],
   markdown: {
     shikiConfig: {
