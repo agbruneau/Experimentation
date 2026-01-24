@@ -173,6 +173,7 @@ func ParseConfig(programName string, args []string, errorWriter io.Writer, avail
 	config := AppConfig{}
 	fs.Uint64Var(&config.N, "n", DefaultN, "Index n of the Fibonacci number to calculate.")
 	fs.BoolVar(&config.Verbose, "v", false, "Display the full value of the result (can be very long).")
+	fs.BoolVar(&config.Verbose, "verbose", false, "Alias for -v.")
 	fs.BoolVar(&config.Details, "d", false, "Display performance details and result metadata.")
 	fs.BoolVar(&config.Details, "details", false, "Alias for -d.")
 	fs.DurationVar(&config.Timeout, "timeout", DefaultTimeout, "Maximum execution time for the calculation.")

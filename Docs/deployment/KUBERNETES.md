@@ -88,7 +88,7 @@ metadata:
   namespace: fibcalc
 data:
   THRESHOLD: "4096"
-  FFT_THRESHOLD: "1000000"
+  FFT_THRESHOLD: "500000"
   STRASSEN_THRESHOLD: "3072"
   TIMEOUT: "5m"
 ```
@@ -437,7 +437,7 @@ autoscaling:
 
 config:
   threshold: 4096
-  fftThreshold: 1000000
+  fftThreshold: 500000
   strassenThreshold: 3072
   timeout: 5m
 ```

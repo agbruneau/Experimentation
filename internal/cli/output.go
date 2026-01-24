@@ -122,6 +122,28 @@ func DisplayQuietResult(out io.Writer, result *big.Int, n uint64, duration time.
 	fmt.Fprintln(out, FormatQuietResult(result, n, duration, hexOutput))
 }
 
+// DisplayHexResult displays a result in hexadecimal format with optional truncation.
+// Uses consistent formatting with color highlighting and truncation based on TruncationLimit.
+//
+// Parameters:
+//   - out: The output writer.
+//   - result: The calculated Fibonacci number.
+//   - n: The index of the Fibonacci number.
+//   - verbose: If true, displays the full hex string without truncation.
+func DisplayHexResult(out io.Writer, result *big.Int, n uint64, verbose bool) {
+	fmt.Fprintf(out, "\n%s--- Hexadecimal Format ---%s\n", ui.ColorBold(), ui.ColorReset())
+	hexStr := result.Text(16)
+	if len(hexStr) > TruncationLimit && !verbose {
+		fmt.Fprintf(out, "F(%s%d%s) [hex] = %s0x%s...%s%s\n",
+			ui.ColorMagenta(), n, ui.ColorReset(),
+			ui.ColorGreen(), hexStr[:HexDisplayEdges], hexStr[len(hexStr)-HexDisplayEdges:], ui.ColorReset())
+	} else {
+		fmt.Fprintf(out, "F(%s%d%s) [hex] = %s0x%s%s\n",
+			ui.ColorMagenta(), n, ui.ColorReset(),
+			ui.ColorGreen(), hexStr, ui.ColorReset())
+	}
+}
+
 // DisplayResultWithConfig displays a result with the given output configuration.
 // This is a unified function that handles all output modes.
 //
@@ -144,16 +166,8 @@ func DisplayResultWithConfig(out io.Writer, result *big.Int, n uint64, duration 
 		DisplayResult(result, n, duration, config.Verbose, true, config.Concise, out)
 
 		// Show hex format if requested
-		if config.HexOutput && !config.Quiet {
-			fmt.Fprintf(out, "\n%sHexadecimal format:%s\n", ui.ColorBold(), ui.ColorReset())
-			hexStr := result.Text(16)
-			if len(hexStr) > 100 && !config.Verbose {
-				fmt.Fprintf(out, "F(%d) [hex] = %s0x%s...%s%s\n",
-					n, ui.ColorGreen(), hexStr[:40], hexStr[len(hexStr)-40:], ui.ColorReset())
-			} else {
-				fmt.Fprintf(out, "F(%d) [hex] = %s0x%s%s\n",
-					n, ui.ColorGreen(), hexStr, ui.ColorReset())
-			}
+		if config.HexOutput {
+			DisplayHexResult(out, result, n, config.Verbose)
 		}
 	}
 

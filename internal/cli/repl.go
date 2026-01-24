@@ -252,7 +252,13 @@ func (r *REPL) calculate(n uint64) {
 	fmt.Fprintf(r.out, "  Digits: %s%d%s\n", ui.ColorCyan(), numDigits, ui.ColorReset())
 
 	if r.config.HexOutput {
-		fmt.Fprintf(r.out, "  F(%d) = %s0x%s%s\n", n, ui.ColorGreen(), result.Text(16), ui.ColorReset())
+		hexStr := result.Text(16)
+		if len(hexStr) > TruncationLimit {
+			fmt.Fprintf(r.out, "  F(%d) = %s0x%s...%s%s (truncated)\n",
+				n, ui.ColorGreen(), hexStr[:HexDisplayEdges], hexStr[len(hexStr)-HexDisplayEdges:], ui.ColorReset())
+		} else {
+			fmt.Fprintf(r.out, "  F(%d) = %s0x%s%s\n", n, ui.ColorGreen(), hexStr, ui.ColorReset())
+		}
 	} else if numDigits > TruncationLimit {
 		fmt.Fprintf(r.out, "  F(%d) = %s%s...%s%s (truncated)\n",
 			n, ui.ColorGreen(), resultStr[:DisplayEdges], resultStr[numDigits-DisplayEdges:], ui.ColorReset())

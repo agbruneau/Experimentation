@@ -183,21 +183,23 @@ func (m DashboardModel) renderInputSection() string {
 
 	inputField := fmt.Sprintf("  N: %s", inputStyle.Width(30).Render(display))
 
-	// Buttons
+	// Buttons with visual feedback
 	calcBtnStyle := m.styles.Button
 	compareBtnStyle := m.styles.Button
-	if m.focusedSection == SectionInput {
+	if m.focusedSection == SectionInput && !m.input.inputActive {
 		calcBtnStyle = m.styles.ButtonFocused
 	}
 
-	calcBtn := calcBtnStyle.Render("[c] CALCULATE")
-	compareBtn := compareBtnStyle.Render("[m] COMPARE ALL")
+	calcBtn := calcBtnStyle.Render("▶ CALCULATE")
+	compareBtn := compareBtnStyle.Render("⋮ COMPARE ALL")
 
-	// Status indicator
+	// Status indicator with animation
 	status := ""
 	if m.calculation.active {
 		elapsed := time.Since(m.calculation.startTime).Round(time.Millisecond)
-		status = m.styles.Info.Render(fmt.Sprintf("  Running... %v", elapsed))
+		spinFrames := []string{"⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"}
+		frameIdx := int(elapsed.Milliseconds()/100) % len(spinFrames)
+		status = m.styles.Info.Render(fmt.Sprintf("  %s Running... %v", spinFrames[frameIdx], elapsed))
 	}
 
 	b.WriteString(lipgloss.JoinHorizontal(lipgloss.Center,

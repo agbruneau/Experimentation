@@ -46,7 +46,7 @@ func (m DashboardModel) renderAlgorithmTable() string {
 	b.WriteString("\n")
 
 	// Separator
-	b.WriteString(m.styles.Muted.Render(strings.Repeat("─", 90)))
+	b.WriteString(m.styles.Primary.Render(strings.Repeat("━", 90)))
 	b.WriteString("\n")
 
 	// Algorithm rows
@@ -65,8 +65,11 @@ func (m DashboardModel) renderAlgorithmRow(idx int, name string) string {
 	duration := m.algorithms.durations[idx]
 	status := m.algorithms.statuses[idx]
 
-	// Row style
+	// Row style with alternating backgrounds
 	rowStyle := m.styles.TableRow
+	if idx%2 == 1 {
+		rowStyle = m.styles.TableRowAlt
+	}
 	if m.focusedSection == SectionAlgorithms && idx == m.algorithms.cursor {
 		rowStyle = m.styles.MenuItemActive
 	}

@@ -320,3 +320,43 @@ func TestEnvHelpers(t *testing.T) {
 		}
 	})
 }
+
+func TestVerboseFlagAlias(t *testing.T) {
+	t.Parallel()
+	availableAlgos := []string{"fast", "matrix", "fft"}
+
+	tests := []struct {
+		name string
+		args []string
+		want bool
+	}{
+		{
+			name: "short form -v",
+			args: []string{"-v"},
+			want: true,
+		},
+		{
+			name: "long form --verbose",
+			args: []string{"-verbose"},
+			want: true,
+		},
+		{
+			name: "no verbose flag",
+			args: []string{},
+			want: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			cfg, err := ParseConfig("test", tt.args, io.Discard, availableAlgos)
+			if err != nil {
+				t.Fatalf("ParseConfig failed: %v", err)
+			}
+			if cfg.Verbose != tt.want {
+				t.Errorf("Verbose = %v, want %v", cfg.Verbose, tt.want)
+			}
+		})
+	}
+}

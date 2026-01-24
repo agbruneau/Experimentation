@@ -87,15 +87,21 @@ func (m DashboardModel) renderResultsSection() string {
 	// Consistency check
 	if len(m.results.results) > 1 {
 		if m.results.consistent {
-			b.WriteString(m.styles.Success.Render("       ✓ All results consistent"))
+			b.WriteString(m.styles.Success.Bold(true).Render("   ✓ All results consistent"))
 		} else {
-			b.WriteString(m.styles.Error.Render("       ✗ Results inconsistent!"))
+			b.WriteString(m.styles.Error.Bold(true).Render("   ✗ Results inconsistent!"))
 		}
 	}
 
 	// Actions hint
 	b.WriteString("\n\n")
-	b.WriteString(m.styles.Muted.Render("  [x] Toggle hex  [v] Toggle full value  [Ctrl+S] Save"))
+	b.WriteString("  ")
+	b.WriteString(m.styles.HelpKey.Render("[x]"))
+	b.WriteString(m.styles.HelpDesc.Render(" Toggle hex  "))
+	b.WriteString(m.styles.HelpKey.Render("[v]"))
+	b.WriteString(m.styles.HelpDesc.Render(" Toggle full  "))
+	b.WriteString(m.styles.HelpKey.Render("[Ctrl+S]"))
+	b.WriteString(m.styles.HelpDesc.Render(" Save"))
 
 	return b.String()
 }

@@ -190,7 +190,7 @@ Typical output:
 === Execution Configuration ===
 Calculating F(10000000) with a timeout of 5m0s.
 Environment: 24 logical processors, Go go1.25.
-Optimization thresholds: Parallelism=4096 bits, FFT=1000000 bits.
+Optimization thresholds: Parallelism=4096 bits, FFT=500000 bits.
 Execution mode: Parallel comparison of all algorithms.
 
 === Comparison Summary ===

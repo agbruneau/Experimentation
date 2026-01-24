@@ -80,7 +80,7 @@ func releaseState(s *calculationState) {
 
 #### Switching Threshold
 
-The `--fft-threshold` parameter (default: 1,000,000 bits) controls when FFT multiplication is used:
+The `--fft-threshold` parameter (default: 500,000 bits) controls when FFT multiplication is used:
 
 ```go
 func smartMultiply(z, x, y *big.Int, threshold int) *big.Int {
@@ -174,7 +174,7 @@ Calibration tests different thresholds and determines optimal values for your ha
 | Parameter | Default | Description | Adjustment |
 |-----------|---------|-------------|------------|
 | `--threshold` | 4096 | Parallelism threshold (bits) | ↑ on slow CPU, ↓ on many-core |
-| `--fft-threshold` | 1000000 | FFT threshold (bits) | ↓ on CPU with large L3 cache |
+| `--fft-threshold` | 500000 | FFT threshold (bits) | ↓ on CPU with large L3 cache |
 | `--strassen-threshold` | 3072 | Strassen threshold (bits) | ↑ if addition overhead visible |
 
 ### Recommendations by Workload Type

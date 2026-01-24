@@ -5,7 +5,7 @@
 
 ## Introduction
 
-The **Fast Fourier Transform (FFT)** allows multiplying two large integers in O(n log n) instead of O(n²) for naive multiplication or O(n^1.585) for Karatsuba. This optimization becomes crucial for numbers exceeding approximately 1 million bits.
+The **Fast Fourier Transform (FFT)** allows multiplying two large integers in O(n log n) instead of O(n²) for naive multiplication or O(n^1.585) for Karatsuba. This optimization becomes crucial for numbers exceeding approximately 500,000 bits.
 
 ## Mathematical Principle
 
@@ -114,11 +114,11 @@ The implementation uses a **Fermat FFT** operating in the ring Z/(2^k + 1):
 ### Configuration
 
 ```bash
-# Default threshold: 1,000,000 bits
-./fibcalc -n 100000000 --fft-threshold 1000000
-
-# Force earlier FFT (numbers > 500,000 bits)
+# Default threshold: 500,000 bits
 ./fibcalc -n 100000000 --fft-threshold 500000
+
+# Force later FFT (numbers > 1,000,000 bits)
+./fibcalc -n 100000000 --fft-threshold 1000000
 
 # Disable FFT
 ./fibcalc -n 100000000 --fft-threshold 0

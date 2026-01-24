@@ -86,6 +86,17 @@ func isFlagSet(fs *flag.FlagSet, name string) bool {
 	return found
 }
 
+// isFlagSetAny checks if any of the specified flags were explicitly set.
+// This is useful for aliased flags where either the short or long form may be used.
+func isFlagSetAny(fs *flag.FlagSet, names ...string) bool {
+	for _, name := range names {
+		if isFlagSet(fs, name) {
+			return true
+		}
+	}
+	return false
+}
+
 // applyEnvOverrides applies environment variable values to the configuration
 // for any flags that were not explicitly set on the command line.
 // This implements the priority: CLI flags > Environment variables > Defaults.
@@ -142,7 +153,7 @@ func applyStringOverrides(config *AppConfig, fs *flag.FlagSet) {
 	if !isFlagSet(fs, "port") {
 		config.Port = getEnvString("PORT", config.Port)
 	}
-	if !isFlagSet(fs, "output") && !isFlagSet(fs, "o") {
+	if !isFlagSetAny(fs, "output", "o") {
 		config.OutputFile = getEnvString("OUTPUT", config.OutputFile)
 	}
 	if !isFlagSet(fs, "calibration-profile") {
@@ -157,13 +168,13 @@ func applyBooleanOverrides(config *AppConfig, fs *flag.FlagSet) {
 	if !isFlagSet(fs, "json") {
 		config.JSONOutput = getEnvBool("JSON", config.JSONOutput)
 	}
-	if !isFlagSet(fs, "v") {
+	if !isFlagSetAny(fs, "v", "verbose") {
 		config.Verbose = getEnvBool("VERBOSE", config.Verbose)
 	}
-	if !isFlagSet(fs, "d") && !isFlagSet(fs, "details") {
+	if !isFlagSetAny(fs, "d", "details") {
 		config.Details = getEnvBool("DETAILS", config.Details)
 	}
-	if !isFlagSet(fs, "quiet") && !isFlagSet(fs, "q") {
+	if !isFlagSetAny(fs, "quiet", "q") {
 		config.Quiet = getEnvBool("QUIET", config.Quiet)
 	}
 	if !isFlagSet(fs, "hex") {
@@ -181,7 +192,7 @@ func applyBooleanOverrides(config *AppConfig, fs *flag.FlagSet) {
 	if !isFlagSet(fs, "auto-calibrate") {
 		config.AutoCalibrate = getEnvBool("AUTO_CALIBRATE", config.AutoCalibrate)
 	}
-	if !isFlagSet(fs, "calculate") && !isFlagSet(fs, "c") {
+	if !isFlagSetAny(fs, "calculate", "c") {
 		config.Concise = getEnvBool("CALCULATE", config.Concise)
 	}
 }

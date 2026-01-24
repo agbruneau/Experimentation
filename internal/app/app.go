@@ -336,17 +336,7 @@ func (a *Application) displayHexIfNeeded(res *orchestration.CalculationResult, c
 	if !cfg.HexOutput {
 		return
 	}
-	fmt.Fprintf(out, "\n%s--- Hexadecimal Format ---%s\n", ui.ColorBold(), ui.ColorReset())
-	hexStr := res.Result.Text(16)
-	if len(hexStr) > 100 && !a.Config.Verbose {
-		fmt.Fprintf(out, "F(%s%d%s) [hex] = %s0x%s...%s%s\n",
-			ui.ColorMagenta(), a.Config.N, ui.ColorReset(),
-			ui.ColorGreen(), hexStr[:40], hexStr[len(hexStr)-40:], ui.ColorReset())
-	} else {
-		fmt.Fprintf(out, "F(%s%d%s) [hex] = %s0x%s%s\n",
-			ui.ColorMagenta(), a.Config.N, ui.ColorReset(),
-			ui.ColorGreen(), hexStr, ui.ColorReset())
-	}
+	cli.DisplayHexResult(out, res.Result, a.Config.N, a.Config.Verbose)
 }
 
 // jsonResult represents a single calculation result in JSON format.

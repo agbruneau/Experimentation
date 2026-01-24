@@ -279,8 +279,60 @@ func TestDisplayResultWithConfig(t *testing.T) {
 			t.Errorf("Unexpected error: %v", err)
 		}
 		output := buf.String()
-		if !strings.Contains(output, "Hexadecimal format") {
+		if !strings.Contains(output, "Hexadecimal Format") {
 			t.Errorf("Should show hex format section, got '%s'", output)
+		}
+	})
+}
+
+func TestDisplayHexResult(t *testing.T) {
+	t.Parallel()
+
+	t.Run("short hex value", func(t *testing.T) {
+		t.Parallel()
+		var buf bytes.Buffer
+		result := big.NewInt(255) // 0xff
+		DisplayHexResult(&buf, result, 10, false)
+		output := buf.String()
+
+		if !strings.Contains(output, "Hexadecimal Format") {
+			t.Error("Should contain header")
+		}
+		if !strings.Contains(output, "0xff") {
+			t.Errorf("Should contain '0xff', got '%s'", output)
+		}
+		if strings.Contains(output, "...") {
+			t.Error("Short hex should not be truncated")
+		}
+	})
+
+	t.Run("long hex truncated", func(t *testing.T) {
+		t.Parallel()
+		var buf bytes.Buffer
+		// Create a number with more than 100 hex characters
+		result := new(big.Int)
+		hexStr := strings.Repeat("a", 200)
+		result.SetString(hexStr, 16)
+		DisplayHexResult(&buf, result, 1000, false)
+		output := buf.String()
+
+		if !strings.Contains(output, "...") {
+			t.Error("Long hex should be truncated")
+		}
+	})
+
+	t.Run("long hex verbose no truncation", func(t *testing.T) {
+		t.Parallel()
+		var buf bytes.Buffer
+		// Create a number with more than 100 hex characters
+		result := new(big.Int)
+		hexStr := strings.Repeat("a", 200)
+		result.SetString(hexStr, 16)
+		DisplayHexResult(&buf, result, 1000, true)
+		output := buf.String()
+
+		if strings.Contains(output, "...") {
+			t.Error("Verbose mode should not truncate")
 		}
 	})
 }
